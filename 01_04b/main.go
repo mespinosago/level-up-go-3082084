@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"math"
 )
 
 // coin contains the name and value of a coin
@@ -23,7 +24,15 @@ var coins = []coin{
 
 // calculateChange returns the coins required to calculate the
 func calculateChange(amount float64) map[coin]int {
-	panic("NOT IMPLEMENTED")
+	change := map[coin]int{}
+	for _, coin := range coins {
+		if amount > coin.value {
+			n := math.Floor(amount / coin.value)
+			change[coin] = int(n)
+			amount = amount - (coin.value * n)
+		}
+	}
+	return change
 }
 
 // printCoins prints all the coins in the slice to the terminal.
