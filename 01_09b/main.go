@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"text/tabwriter"
 )
 
@@ -19,7 +20,44 @@ type Song struct {
 
 // makePlaylist makes the merged sorted list of songs
 func makePlaylist(albums [][]Song) []Song {
-	panic("NOT IMPLEMENTED")
+	songs := []Song{}
+	iAlbum := map[string]int{} // index per album name
+	nAlbum := map[string]int{} // remaining songs per album
+	kAlbum := map[string]int{} // counter  per album name
+	// number of songs per album
+	// ini index per album
+	for i := 0; i < len(albums); i++ {
+		albumName := albums[i][0].Album
+		nAlbum[albumName] = len(albums[i])
+		iAlbum[albumName] = i
+		kAlbum[albumName] = 0
+	}
+	for {
+		// take the first song of every album
+		s := []Song{}
+		for a, i := range iAlbum {
+			if nAlbum[a] == 0 { // no more songs left in this album
+				continue
+			}
+			k := kAlbum[a] // next index available for this album
+			s = append(s, albums[i][k])
+		}
+		// all songs from all albums have been picked up
+		if len(s) == 0 {
+			break
+		}
+
+		// sort the available songs according to their playcount
+		sort.Slice(s, func(i, j int) bool {
+			return s[i].PlayCount > s[j].PlayCount
+		})
+		// pick up the first one
+		songs = append(songs, s[0])
+		// update indexes
+		nAlbum[s[0].Album] -= 1
+		kAlbum[s[0].Album] += 1
+	}
+	return songs
 }
 
 func main() {
