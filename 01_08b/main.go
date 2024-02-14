@@ -25,12 +25,22 @@ func (f *Friend) hearGossip() {
 
 // Friends represents the map of friends and connections
 type Friends struct {
-	fmap map[string]Friend
+	fmap    map[string]Friend
+	gossips map[string]struct{}
 }
 
 // getFriend fetches the friend given an id.
 func (f *Friends) getFriend(id string) Friend {
 	return f.fmap[id]
+}
+
+func (f *Friends) addGossip(id string) {
+	f.gossips[id] = struct{}{}
+}
+
+func (f *Friends) gossipped(id string) bool {
+	_, ok := f.gossips[id]
+	return ok
 }
 
 // getRandomFriend returns an random friend.
@@ -42,7 +52,15 @@ func (f *Friends) getRandomFriend() Friend {
 
 // spreadGossip ensures that all the friends in the map have heard the news
 func spreadGossip(root Friend, friends Friends) {
-	panic("NOT IMPLEMENTED")
+	if root.ID == "" || friends.gossipped(root.ID) {
+		return
+	}
+	root.hearGossip()
+	friends.addGossip(root.ID)
+	for _, f := range root.Friends {
+		friend := friends.getFriend(f)
+		spreadGossip(friend, friends)
+	}
 }
 
 func main() {
@@ -72,6 +90,7 @@ func importData() Friends {
 	}
 
 	return Friends{
-		fmap: fm,
+		fmap:    fm,
+		gossips: map[string]struct{}{},
 	}
 }
