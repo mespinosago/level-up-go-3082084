@@ -1,36 +1,28 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"strings"
 	"time"
 )
 
-const delay = 700 * time.Millisecond
+var expectedFormat = "2006-01-02"
 
-// print outputs a message and then sleeps for a pre-determined amount
-func print(msg string) {
-	log.Println(msg)
-	time.Sleep(delay)
+// parseTime validates and parses a given date string.
+func parseTime(target string) time.Time {
+	t,_ := time.Parse(expectedFormat, target)
+	return t
 }
 
-// slowDown takes the given string and repeats its characters
-// according to their index in the string.
-func slowDown(msg string) {
-	for _, word := range strings.Split(msg, " ") {
-		print(expand(word))
-	}
-}
-
-func expand(word string) string {
-	var result string
-	for i, c := range word {
-		result += strings.Repeat(string(c),i+1)
-	}
-	return result
+// calcSleeps returns the number of sleeps until the target.
+func calcSleeps(target time.Time) float64 {
+	return target.Sub(time.Now()).Hours() / 24
 }
 
 func main() {
-	msg := "Time to learn about Go strings!"
-	slowDown(msg)
+	bday := flag.String("bday", "", "Your next bday in YYYY-MM-DD format")
+	flag.Parse()
+	target := parseTime(*bday)
+	log.Printf("You have %d sleeps until your birthday. Hurray!",
+		int(calcSleeps(target)))
 }
